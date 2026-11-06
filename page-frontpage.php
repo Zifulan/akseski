@@ -27,7 +27,7 @@ get_header();
 			
 		});
 	</script>
-		<main id="main" class="site-main">
+		<main id="main" class="site-main front-main">
 		    <?php get_template_part("template-parts/front-topnew4"); ?>	
 			<!--LATEST NEWS-->
 			<section>

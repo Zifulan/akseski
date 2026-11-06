@@ -1,4 +1,4 @@
-<div class="modern-news-section">
+<div class="modern-news-section" id="front-news">
 	<div class="container">
 		<div class="news-header">
 			<h2 class="news-title">APT Latest News & Activities</h2>

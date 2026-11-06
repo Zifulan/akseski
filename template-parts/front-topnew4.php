@@ -41,7 +41,7 @@
 			if(strlen($ftn_smornot) > 60) $ftn_smornot = substr($ftn_smornot, 0, 57) . '...';
 			if(strlen($ad) > 120) $ad = substr($ad, 0, 117) . '...';
 			
-			$ftn_smornot = preg_replace(['/\s+/', '/-/'], ['&nbsp;', '&#8209;'], $ftn_smornot);
+			$ftn_smornot = str_replace('-', '&#8209;', $ftn_smornot);
 			
 			$card_content = '
 				<div class="bento-card-bg" style="background-image: url('.a_get_the_post_thumbnail_url().');"></div>
@@ -238,12 +238,13 @@
 #mobileCarousel .carousel-inner{height:100%}
 .carousel-fade .carousel-item{opacity:0;transition:opacity 1.5s ease-in-out}
 .carousel-fade .carousel-item.active{opacity:1}
-.mobile-hero-slide{position:relative;height:calc(100vh - 85px);max-height:calc(100vh - 85px);display:flex;align-items:flex-end;overflow:hidden;padding-bottom:110px}
+.mobile-hero-slide{position:relative;padding-top:96px;height:calc(100vh - 85px);max-height:calc(100vh - 85px);display:flex;align-items:flex-end;overflow:hidden;padding-bottom:110px}
 .mobile-hero-bg{position:absolute;top:0;left:0;right:0;bottom:0;background-size:cover;background-position:center;z-index:1;animation:zoomSlow 15s ease-in-out infinite alternate}
 @keyframes zoomSlow{0%{transform:scale(1)}100%{transform:scale(1.08)}}
 .mobile-hero-gradient{position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(180deg,rgba(10,14,26,0) 0%,rgba(10,14,26,0.2) 30%,rgba(10,14,26,0.8) 60%,rgba(10,14,26,0.95) 85%,rgba(10,14,26,1) 100%);z-index:2}
 .mobile-hero-content{position:relative;z-index:3;padding:0 24px;width:100%;max-width:600px}
 .mobile-hero-title{font-family:'Sora',-apple-system,sans-serif;font-size:1.85rem;font-weight:800;line-height:1.2;color:#fff;margin:0 0 12px 0;text-shadow:0 4px 20px rgba(0,0,0,0.8);letter-spacing:-0.02em}
+.mobile-hero-title{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
 .mobile-hero-meta{margin-bottom:20px}
 .mobile-meta-pill{display:inline-flex;align-items:center;gap:6px;font-family:'Inter',-apple-system,sans-serif;font-size:0.88rem;color:rgba(255,255,255,0.95);background:rgba(255,255,255,0.12);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding:7px 16px;border-radius:20px;border:1px solid rgba(255,255,255,0.18);font-weight:500}
 .mobile-hero-cta{display:inline-flex;align-items:center;gap:10px;background:linear-gradient(135deg,#CE1126 0%,#FF4757 100%);color:#fff;padding:14px 28px;border-radius:28px;font-family:'Inter',-apple-system,sans-serif;font-size:0.95rem;font-weight:700;text-decoration:none;box-shadow:0 8px 24px rgba(206,17,38,0.45);transition:all 0.3s cubic-bezier(0.4,0,0.2,1)}
