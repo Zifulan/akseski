@@ -1,0 +1,107 @@
+<?php
+get_header();
+?>
+<script type="text/javascript">	
+	//smooth scrolling
+	jQuery(function($) {			
+		$('.smoothscroll').click(function(){
+			$('html, body').animate({
+				scrollTop: $( $(this).attr('href') ).offset().top
+			}, 500);
+			return false;
+		});			
+	});
+</script>	
+<main id="main" class="site-main site-single">
+	<div class="container">
+		<div class="row akseki-detail-style1">
+			<div class="col-md-12">	
+				<article id="post-2100" class="post-2100 page type-page status-publish hentry">
+					<header class="entry-header">
+						<h1 class="entry-title">Areas of Cooperation</h1>	<hr style="border-bottom:1px gray dotted;margin-bottom:1em;">
+					</header>
+					<div class="entry-content">
+						<div class="row">
+							<div class="col-12 col-md-7 col-lg-9 d-flex flex-column justify-content-center">
+								
+								<p>In 2007, the 2<sup>nd</sup> Joint Statement titled "Building on the Foundations of ASEAN Plus Three Cooperation" reaffirmed the APT as the main vehicle for East Asian community-building, with ASEAN as the driving force. A 10-year <a href="https://aseanplusthree.asean.org/asean-plus-three-cooperation-work-plan-2007-2017/">APT Cooperation Work Plan (2007–2017)</a> was adopted at the 11<sup>th</sup> APT Summit in November 2007 in Singapore. It was later revised and adopted as the <a href="https://aseanplusthree.asean.org/asean-plus-three-cooperation-work-plan-2013-2017/">APT Cooperation Work Plan (2007–2017)</a> at the 16<sup>th</sup> APT Summit in October 2013 in Manila. The <a href="https://aseanplusthree.asean.org/manila-declaration-on-the-20th-anniversary-of-asean-plus-three-cooperation-14-november-2017-manila/">Manila Declaration</a> in 2017, which marked APT's 20<sup>th</sup> anniversary, welcomed the succeeding <a href="https://aseanplusthree.asean.org/asean-plus-three-cooperation-work-plan-2018-2022/">Work Plan for 2018–2022</a>. The current <a href="https://aseanplusthree.asean.org/asean-plus-three-cooperation-work-plan-2023-2027/">Work Plan (2023–2027)</a> was adopted in August 2022 at the <a href="https://aseanplusthree.asean.org/23rd-asean-plus-three-foreign-ministers-meeting/">23<sup>rd</sup> APT Foreign Ministers' Meeting</a> in Phnom Penh.</p>
+								
+								<p>The APT framework has become a cornerstone of East Asian regionalism, fostering cooperation in political-security, economic, and socio-cultural areas. The APT process has also developed into a full-fledged cooperation framework with 59 mechanisms coordinating various initiatives.</p>
+								
+							</div>
+							<div class="col-12 col-md-5 col-lg-3">
+								<div class="card shadow">
+									<div class="card-body">
+										<h4>APT Work Plans:</h4>
+										<div class="card-text">
+											<?php echo do_shortcode('[catlist id=9]'); ?>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						
+						<div id="accordionLevel" class="mt-4">
+							<div class="nav row nav-pills mb-3" id="pills-tab" role="tablist">
+								<label class="col btn text-left">Cooperation level:</label>
+								<button class="nav-link text-dark col btn btn-outline-secondary" id="pills-summit-tab" data-toggle="pill" data-target="#pills-summit" type="button" role="tab" aria-controls="pills-summit" aria-selected="true">Summit</button>
+								<button class="active ml-1 nav-link text-dark col btn btn-outline-secondary" id="pills-ministerial-tab" data-toggle="pill" data-target="#pills-ministerial" type="button" role="tab" aria-controls="pills-ministerial" aria-selected="false">Ministerial</button>
+								<button class="ml-1 nav-link text-dark col btn btn-outline-secondary" id="pills-cpr-tab" data-toggle="pill" data-target="#pills-cpr" type="button" role="tab" aria-controls="pills-cpr" aria-selected="false">CPR</button>
+								<button class="ml-1 nav-link text-dark col btn btn-outline-secondary" id="pills-aptwg-tab" data-toggle="pill" data-target="#pills-aptwg" type="button" role="tab" aria-controls="pills-aptwg" aria-selected="false">APTWG/CPRWG</button>
+								<button disabled class="ml-1 nav-link text-dark col btn btn-outline-secondary" id="pills-som-tab" data-toggle="pill" data-target="#pills-som" type="button" role="tab" aria-controls="pills-som" aria-selected="false">SOM</button>
+							</div>
+							<div class="tab-content" id="pills-tabContent">
+							  <div class="tab-pane fade" id="pills-summit" role="tabpanel" aria-labelledby="pills-summit-tab">
+								<h4>Recent Statements:</h4>
+								<?php echo do_shortcode('[catlist name=summit-level-statements numberposts=7 morelink="full listing" template=akseki_aoc]'); ?>
+							  </div>
+							  <div class="tab-pane fade show active" id="pills-ministerial" role="tabpanel" aria-labelledby="pills-ministerial-tab">
+								<div class="row" id="ar_political">
+									<button class="btn col-12 btn-secondary text-left" data-toggle="collapse" data-target="#collapsePolitical" aria-expanded="true" aria-controls="collapsePolitical">
+										+ Political
+									</button>
+									<div id="collapsePolitical" class="collapse show col-12">
+										<?php echo do_shortcode('[akseki_aoc parent=63]'); ?>
+									</div>
+								</div>
+								<div class="row" id="ar_economic">
+									<button class="btn col-12 btn-secondary text-left" data-toggle="collapse" data-target="#collapseEconomic" aria-expanded="true" aria-controls="collapseEconomic">
+										+ Economic
+									</button>
+									<div id="collapseEconomic" class="collapse col-12">
+										<?php echo do_shortcode('[akseki_aoc parent=47]'); ?>
+									</div>
+								</div>
+								<div class="row" id="ar_socio">
+									<button class="btn col-12 btn-secondary text-left" data-toggle="collapse" data-target="#collapseSocio" aria-expanded="true" aria-controls="collapseSocio">
+										+ Socio Cultural
+									</button>
+									<div id="collapseSocio" class="collapse col-12">
+										<?php echo do_shortcode('[akseki_aoc parent=54]'); ?>
+									</div>
+								</div>
+							  </div>
+							  <div class="tab-pane fade" id="pills-cpr" role="tabpanel" aria-labelledby="pills-cpr-tab">
+								<h4>Recent Meetings:</h4>
+								<?php echo do_shortcode('[catlist name=cpr-level numberposts=7 morelink="full listing" template=akseki_aoc]'); ?>
+							  </div>
+							  <div class="tab-pane fade" id="pills-aptwg" role="tabpanel" aria-labelledby="pills-aptwg-tab">
+								<h4>Recent Meetings:</h4>
+								<?php echo do_shortcode('[catlist name=aptwg numberposts=7 morelink="full listing" template=akseki_aocnolink]'); ?>
+							  </div>
+							</div>
+						</div>
+						
+						<!--hr class="wp-block-separator has-css-opacity">
+						<div>
+							<h2>APT Mechanisms Matrix</h2>
+							<?php //get_template_part("template-parts/sidebar-mechmatrix"); ?>
+						</div-->
+					</div><!-- .entry-content -->
+				</article><!-- #post-2100 -->
+			</div>
+		</div>
+	</div>
+</main>
+<?php
+get_footer();
