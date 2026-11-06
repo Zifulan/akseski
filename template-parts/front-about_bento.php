@@ -165,7 +165,7 @@
 	border:1px solid rgba(255,255,255,.1);
 	border-radius:24px;
 	padding:40px;
-	height:100%;
+	height:auto;
 	transition:all .4s ease;
 }
 

@@ -39,6 +39,10 @@ scroll-snap-type: y mandatory;
 	min-height:100vh;
 	scroll-snap-align: start;
 }
+/* Homepage: content sections size to their content; the hero sets its own height */
+#main.front-main section:not(.bentoSection){
+	min-height:0;
+}
 @media only screen and (max-width: 991px) {
 	/*for smaller screens*/
 	#front-top{
