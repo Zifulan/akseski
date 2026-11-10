@@ -27,10 +27,59 @@ function avi_enqueue() {
 	//AKSEKI
 	wp_register_script( 'akseki-js', get_stylesheet_directory_uri() . '/akseki.js' );
     wp_enqueue_script( 'akseki-js' );
-	
+
+	//APT DESIGN SYSTEM (loaded last so it wins over bootstrap + style.css)
+	wp_enqueue_style( 'apt-font-outfit', 'https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap', array(), null );
+	$apt_css = '/assets/css/apt-design.css';
+	wp_enqueue_style( 'apt-design', get_stylesheet_directory_uri() . $apt_css, array( 'bootstrapstarter-style', 'owl', 'owldefaulttheme', 'apt-font-outfit' ), filemtime( get_stylesheet_directory() . $apt_css ) );
+	$apt_js = '/assets/js/apt-nav.js';
+	wp_enqueue_script( 'apt-nav', get_stylesheet_directory_uri() . $apt_js, array(), filemtime( get_stylesheet_directory() . $apt_js ), true );
 }
 
 add_action( 'wp_enqueue_scripts', 'avi_enqueue' );
+
+/**
+ * Off-canvas mega menu: drop icon-only items (the old "home" icon) and the
+ * repeated "parent as first child" entries the Bootstrap navbar needed.
+ */
+function apt_mega_menu_items( $items, $args ) {
+	if ( empty( $args->apt_mega ) && empty( $args->apt_footer ) ) {
+		return $items;
+	}
+	$by_id = array();
+	foreach ( $items as $item ) {
+		$by_id[ $item->ID ] = $item;
+	}
+	return array_values( array_filter( $items, function ( $item ) use ( $by_id ) {
+		if ( '' === trim( wp_strip_all_tags( $item->title ) ) ) {
+			return false;
+		}
+		$parent_id = (int) $item->menu_item_parent;
+		if ( $parent_id && isset( $by_id[ $parent_id ] ) && untrailingslashit( $by_id[ $parent_id ]->url ) === untrailingslashit( $item->url ) ) {
+			return false;
+		}
+		return true;
+	} ) );
+}
+add_filter( 'wp_nav_menu_objects', 'apt_mega_menu_items', 10, 2 );
+
+/**
+ * Map a pillar category name to a colour key used by the design system
+ * (.pillar-ps / .pillar-ec / .pillar-sc / .pillar-other).
+ */
+function apt_pillar_key( $name ) {
+	$name = strtolower( (string) $name );
+	if ( false !== strpos( $name, 'political' ) || false !== strpos( $name, 'security' ) ) {
+		return 'ps';
+	}
+	if ( false !== strpos( $name, 'econom' ) ) {
+		return 'ec';
+	}
+	if ( false !== strpos( $name, 'socio' ) || false !== strpos( $name, 'cultur' ) ) {
+		return 'sc';
+	}
+	return 'other';
+}
 
 /**
  * Register Custom Navigation Walker
