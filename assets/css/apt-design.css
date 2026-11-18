@@ -42,16 +42,28 @@
 
 	--font: 'Outfit', 'Helvetica Neue', Arial, sans-serif;
 
+	/* Minimum hit area: 24px (WCAG 2.5.8), 44px where the pointer is a finger */
+	--target-size: 24px;
+
 	/* Circled-arrow icon, painted with currentColor through a mask */
 	--icon-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M8 12h8M12.5 8.5 16 12l-3.5 3.5'/%3E%3C/svg%3E");
 	--icon-ext: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M9 15l6-6M10 9h5v5'/%3E%3C/svg%3E");
 	--icon-plus: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M12 8v8M8 12h8'/%3E%3C/svg%3E");
+	--icon-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
 	--icon-minus: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M8 12h8'/%3E%3C/svg%3E");
+}
+
+@media (pointer: coarse) {
+	:root { --target-size: 44px; }
 }
 
 /* ---------- Base ---------------------------------------------------------- */
 
 html { font-family: var(--font); font-size: 16px; scroll-padding-top: var(--header-offset); }
+/* Native smooth anchor scrolling, only when motion is welcome */
+@media (prefers-reduced-motion: no-preference) {
+	html { scroll-behavior: smooth; }
+}
 
 body {
 	font-family: var(--font);
@@ -59,30 +71,30 @@ body {
 	color: var(--ink);
 	margin: 0 !important;
 	min-height: 100vh;
+	min-height: 100dvh;
 	background: var(--apt-blue);
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
 }
-/* Gradient lives on a fixed layer: background-attachment:fixed is ignored on iOS */
+/* Gradient on a fixed, oversized layer (background-attachment: fixed is
+   ignored on iOS). It drifts with transform only, so the compositor moves it
+   without repainting the page every frame. */
 body::before {
 	content: '';
 	position: fixed;
-	inset: 0;
+	inset: -30vmax;
 	z-index: -1;
 	pointer-events: none;
 	background-image:
-		radial-gradient(60vmax 50vmax at 85% 10%, rgba(255, 205, 0, 0.28), transparent 60%),
-		linear-gradient(120deg, var(--apt-blue) 0%, #3a3a9a 30%, var(--apt-maroon) 65%, var(--apt-crimson) 100%);
-	background-size: 100% 100%, 220% 220%;
-	animation: apt-grad 28s ease-in-out infinite alternate;
+		radial-gradient(45vmax 35vmax at 70% 30%, rgba(255, 205, 0, 0.26), transparent 60%),
+		linear-gradient(120deg, var(--apt-blue) 20%, #3a3a9a 40%, var(--apt-maroon) 62%, var(--apt-crimson) 80%);
+}
+@media (prefers-reduced-motion: no-preference) {
+	body::before { animation: apt-grad 28s ease-in-out infinite alternate; }
 }
 @keyframes apt-grad {
-	from { background-position: 0 0, 0% 50%; }
-	to   { background-position: 0 0, 100% 50%; }
-}
-@media (prefers-reduced-motion: reduce) {
-	body::before { animation: none; }
-	* { scroll-behavior: auto !important; }
+	from { transform: translate3d(-12vmax, -4vmax, 0); }
+	to   { transform: translate3d(12vmax, 4vmax, 0); }
 }
 
 h1, h2, h3, h4, h5, h6,
@@ -97,7 +109,21 @@ strong, b { font-weight: 600; }
 a { color: var(--apt-blue); }
 a:hover { color: var(--apt-red); }
 
-:focus-visible { outline: 3px solid var(--apt-yellow); outline-offset: 2px; }
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+	/* Two-tone ring: the dark outline contrasts with white panels, the white
+	   halo with the dark gradient, so one of them is always >= 3:1. */
+	outline: 2px solid var(--ink);
+	outline-offset: 2px;
+	box-shadow: 0 0 0 2px var(--paper), 0 0 0 6px var(--paper);
+}
+/* Press feedback, distinct from hover (colour/fill) and focus (ring) */
+:where(.apt-pill, .apt-header-btn, .apt-menu-close, .apt-carousel-btn, .apt-carousel-marker, .resource-accordion-summary, .agenda-month-summary) {
+	transition: background-color 150ms ease-out, color 150ms ease-out, scale 150ms ease-out, box-shadow 150ms ease-out;
+}
+:where(.apt-pill, .apt-header-btn, .apt-menu-close, .apt-carousel-btn):active { scale: 0.96; }
+@media (prefers-reduced-motion: reduce) {
+	:where(.apt-pill, .apt-header-btn, .apt-menu-close, .apt-carousel-btn):active { scale: 1; }
+}
 
 .screen-reader-text {
 	position: absolute !important; width: 1px; height: 1px; overflow: hidden;
@@ -116,6 +142,22 @@ a:hover { color: var(--apt-red); }
 #main section { min-height: 0 !important; scroll-snap-align: none !important; }
 
 /* ---------- Shared pieces ------------------------------------------------- */
+
+/* Target sizes: grow the hit area with min-size (never a fixed size, so
+   content can still make it bigger). Links inside sentences are exempt. */
+:where(
+	.apt-menu-list a, .apt-footer-cols a, .apt-social a, .apt-quicklinks a,
+	.apt-pill, .apt-tag, .news-meta-item a, .news-cta-btn,
+	.apt-carousel-btn, .apt-carousel-marker,
+	.site-main .page-link, .site-main .btn
+) {
+	min-block-size: var(--target-size);
+	min-inline-size: var(--target-size);
+}
+:where(.apt-footer-cols a, .apt-quicklinks a, .news-meta-item a, .news-cta-btn, .site-main .page-link, .site-main .btn) {
+	display: inline-flex;
+	align-items: center;
+}
 
 /* Circled arrow, placed after a link label */
 .apt-arrow::after,
@@ -168,7 +210,7 @@ a:hover { color: var(--apt-red); }
 }
 .apt-section-title {
 	color: var(--on-grad);
-	font-size: clamp(2rem, 4.2vw, 3.25rem);
+	font-size: clamp(2rem, 1.3rem + 2.4vw, 3.25rem);
 	font-weight: 700;
 	line-height: 1.05;
 	margin: 0;
@@ -266,36 +308,87 @@ a:hover { color: var(--apt-red); }
 
 /* ---------- Off-canvas mega menu ----------------------------------------- */
 
-.apt-menu-backdrop {
-	position: fixed; inset: 0; z-index: 1040;
-	background: rgba(15, 18, 40, 0.35);
-	backdrop-filter: blur(14px);
-	-webkit-backdrop-filter: blur(14px);
-	opacity: 0;
-	visibility: hidden;
-	transition: opacity 0.3s ease, visibility 0.3s;
-}
 .apt-menu {
-	position: fixed;
-	z-index: 1050;
-	top: var(--frame-gap); right: var(--frame-gap); bottom: var(--frame-gap);
-	width: min(660px, calc(100vw - var(--frame-gap) * 2));
+	/* Panel width; on phones a strip of page stays visible as the tap-to-close area */
+	--menu-w: min(700px, 92dvw);
+	--menu-backdrop: 0;
+	/* Reset UA dialog styles so the swipe surface spans the viewport */
+	inset: 0;
+	width: auto;
+	height: auto;
+	max-width: none;
+	max-height: none;
+	margin: 0;
+	padding: 0;
+	background: transparent;
+	border: 0;
+	overflow: visible;
+	color: var(--ink);
+}
+.apt-menu::backdrop {
+	background: rgb(15 18 40);
+	opacity: calc(var(--menu-backdrop) * 0.55);
+}
+html:has(.apt-menu[open]) { overflow: hidden; }
+
+/* Spacer on the left = closed stop, sheet on the right = open stop */
+.apt-menu-scroller {
+	display: grid;
+	grid-template-columns: 100% var(--menu-w);
+	height: 100%;
+	overflow-x: scroll;
+	overscroll-behavior: none;
+	scrollbar-width: none;
+	scroll-snap-type: x mandatory;
+}
+.apt-menu-scroller::-webkit-scrollbar { display: none; }
+@media (prefers-reduced-motion: no-preference) {
+	.apt-menu-scroller { scroll-behavior: smooth; }
+}
+.apt-menu-scroller::before {
+	content: '';
+	scroll-snap-align: start;
+	scroll-initial-target: nearest;
+}
+.apt-menu-sheet {
+	scroll-snap-align: end;
+	height: 100svh;
+	padding: var(--frame-gap);
+	display: flex;
+}
+.apt-menu-panel {
+	flex: 1;
+	min-width: 0;
 	background: var(--paper);
 	border-radius: var(--radius-frame);
 	padding: 28px clamp(24px, 4vw, 44px) 40px;
 	overflow-y: auto;
 	overscroll-behavior: contain;
-	transform: translateX(calc(100% + 40px));
-	visibility: hidden;
-	transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.4s;
 }
-body.apt-menu-open { overflow: hidden; }
-body.apt-menu-open .apt-menu-backdrop { opacity: 1; visibility: visible; }
-body.apt-menu-open .apt-menu { transform: none; visibility: visible; }
+
+/* Backdrop fades with the drag. Gated: without support the keyframes would
+   pin the backdrop fully visible. */
+@supports (animation-timeline: scroll()) {
+	.apt-menu {
+		timeline-scope: --apt-menu-fade;
+		animation: apt-menu-fade linear both;
+		animation-timeline: --apt-menu-fade;
+	}
+	.apt-menu-scroller { scroll-timeline: --apt-menu-fade x; }
+	@property --menu-backdrop {
+		syntax: '<number>';
+		inherits: true;
+		initial-value: 0;
+	}
+	@keyframes apt-menu-fade {
+		0% { --menu-backdrop: 0; }
+		100% { --menu-backdrop: 1; }
+	}
+}
 
 .apt-menu-top { display: flex; justify-content: flex-end; margin-bottom: 8px; }
 .apt-menu-close {
-	width: 44px; height: 44px; border: 0; background: none; padding: 0;
+	width: 44px; height: 44px; border: 0; background: none; padding: 0; border-radius: 50%;
 	display: inline-flex; align-items: center; justify-content: center; cursor: pointer; color: var(--ink);
 }
 .apt-menu-close svg { width: 26px; height: 26px; }
@@ -321,8 +414,8 @@ body.apt-menu-open .apt-menu { transform: none; visibility: visible; }
 .apt-menu-list > li > .sub-menu {
 	display: grid;
 	grid-template-columns: repeat(2, minmax(0, 1fr));
-	gap: 14px 28px;
-	margin-top: 16px;
+	gap: 4px 28px; /* links are now >= the target size tall */
+	margin-top: 12px;
 }
 .apt-menu-list .sub-menu a {
 	display: inline-flex;
@@ -342,7 +435,7 @@ body.apt-menu-open .apt-menu { transform: none; visibility: visible; }
 .apt-menu-list .current-menu-item > a { color: var(--apt-red); font-weight: 600; }
 /* third level: indented, smaller, no icon */
 .apt-menu-list .sub-menu .sub-menu { margin: 8px 0 0 2px; padding-left: 12px; border-left: 2px solid var(--rule-soft); }
-.apt-menu-list .sub-menu .sub-menu li + li { margin-top: 6px; }
+.apt-menu-list .sub-menu .sub-menu li + li { margin-top: 0; }
 .apt-menu-list .sub-menu .sub-menu a { font-size: 0.9rem; color: var(--ink-2); }
 .apt-menu-list .sub-menu .sub-menu a::after { display: none; }
 
@@ -400,7 +493,7 @@ body.apt-menu-open .apt-menu { transform: none; visibility: visible; }
 	background: linear-gradient(90deg, var(--apt-blue), var(--apt-red), var(--apt-yellow));
 }
 .apt-hero-title {
-	font-size: clamp(2.75rem, 6.2vw, 5.5rem);
+	font-size: clamp(2.75rem, 1.6rem + 4.4vw, 5.5rem);
 	font-weight: 700;
 	line-height: 0.98;
 	letter-spacing: -0.025em;
@@ -430,7 +523,7 @@ body.apt-menu-open .apt-menu { transform: none; visibility: visible; }
 }
 .apt-hero-feature-title {
 	display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
-	font-size: clamp(1.05rem, 1.8vw, 1.5rem); font-weight: 700; line-height: 1.2; margin: 0; color: var(--paper);
+	font-size: clamp(1.05rem, 0.8rem + 0.8vw, 1.5rem); font-weight: 700; line-height: 1.2; margin: 0; color: var(--paper);
 }
 @media (max-width: 575.98px) {
 	.apt-hero-feature { aspect-ratio: 4 / 3; }
@@ -444,7 +537,7 @@ body.apt-menu-open .apt-menu { transform: none; visibility: visible; }
 	padding: 5px 10px; border-radius: var(--radius-pill);
 }
 
-.apt-highlights-title { font-size: clamp(1.5rem, 2.4vw, 2rem); font-weight: 700; margin: 0 0 12px; }
+.apt-highlights-title { font-size: clamp(1.5rem, 1.15rem + 1vw, 2rem); font-weight: 700; margin: 0 0 12px; }
 .apt-highlights {
 	display: grid;
 	grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -495,11 +588,12 @@ body.apt-menu-open .apt-menu { transform: none; visibility: visible; }
 }
 .modern-news-section .apt-news-layout > * { min-width: 0; }
 .modern-news-section .apt-news-intro .apt-pill { margin-top: 22px; }
-@media (max-width: 991.98px) {
+@media (max-width: 1199.98px) {
 	.modern-news-section .apt-news-layout { grid-template-columns: 1fr; }
 }
 
 .news-card {
+	position: relative;
 	background: var(--paper);
 	border-radius: var(--radius-tile);
 	overflow: hidden;
@@ -509,40 +603,160 @@ body.apt-menu-open .apt-menu { transform: none; visibility: visible; }
 	color: var(--ink);
 	box-shadow: 0 14px 34px rgba(10, 14, 40, 0.16);
 }
-.news-card-image-wrapper { aspect-ratio: 16 / 10; overflow: hidden; background: var(--paper-2); }
-.owl-carousel .owl-item img.news-card-image,
-.news-card-image { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; }
-.news-card:hover .news-card-image { transform: scale(1.04); }
-.news-card-image-overlay { display: none; }
-.news-card-body { padding: 18px 20px 20px; display: flex; flex-direction: column; flex: 1; }
-.news-card-tag { margin-bottom: 8px; }
+/* Media fills a fixed ratio itself: no wrapper needed */
+.news-card > img {
+	display: block;
+	width: 100%;
+	aspect-ratio: 16 / 10;
+	object-fit: cover;
+	background: var(--paper-2);
+	transition: scale 0.5s ease;
+}
+.news-card > :not(img) { padding-inline: 20px; }
+.news-card-header { padding-top: 18px; }
+.news-card-tag { margin-bottom: 4px; }
 .news-card-title { font-size: 1.15rem; font-weight: 700; line-height: 1.25; margin: 0 0 6px; }
+.news-card-title a { color: inherit; text-decoration: none; }
 .news-card-subtitle {
-	font-size: 0.875rem; color: var(--ink-2); line-height: 1.45; margin-bottom: 10px;
+	font-size: 0.875rem; color: var(--ink-2); line-height: 1.45; margin: 0 0 10px;
 	display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
 }
-.news-card-date { font-size: 0.85rem; color: var(--ink-2); margin-bottom: 12px; }
-.news-meta-grid { border-top: 1px solid var(--rule-soft); padding-top: 10px; margin-bottom: 14px; }
-.news-meta-item { font-size: 0.8rem; line-height: 1.45; color: var(--ink-3); margin-bottom: 4px; }
+.news-card-date { font-size: 0.85rem; color: var(--ink-2); margin: 0 0 12px; }
+.news-meta-grid { border-top: 1px solid var(--rule-soft); padding-top: 10px; margin: 0 0 14px; }
+.news-meta-item { font-size: 0.8rem; line-height: 1.45; color: var(--ink-3); margin-bottom: 0; display: flex; flex-wrap: wrap; align-items: center; column-gap: 4px; }
+.news-meta-item dt, .news-meta-item dd { display: inline; margin: 0; }
 .news-meta-item .meta-label { color: var(--ink-2); font-weight: 500; }
 .news-meta-item a { color: var(--ink-2); text-decoration: underline; text-decoration-color: var(--rule-soft); text-underline-offset: 2px; }
 .news-meta-item a:hover { color: var(--apt-red); }
-.news-card-cta { margin-top: auto; }
+.news-card-cta { margin-top: auto; padding-bottom: 20px; }
 .news-cta-btn { display: inline-flex; align-items: center; color: var(--ink); font-weight: 600; text-decoration: none !important; }
-.news-cta-btn:hover { color: var(--apt-red); }
 .news-card-summit { box-shadow: inset 0 4px 0 var(--apt-red), 0 14px 34px rgba(10, 14, 40, 0.16); }
 .news-card-ministerial { box-shadow: inset 0 4px 0 var(--apt-blue), 0 14px 34px rgba(10, 14, 40, 0.16); }
 
-.modern-news-carousel .owl-stage { display: flex; }
-.modern-news-carousel .owl-item { display: flex; padding-bottom: 6px; }
-.modern-news-carousel .latest-item { width: 100%; }
-.modern-news-carousel.owl-theme .owl-nav { margin-top: 22px; text-align: left; }
-.modern-news-carousel.owl-theme .owl-nav [class*='owl-'] {
-	width: 44px; height: 44px; margin: 0 10px 0 0; padding: 0 !important;
-	border-radius: 50%; border: 1px solid var(--on-grad) !important;
-	background: transparent !important; color: var(--on-grad) !important; font-size: 1.4rem; line-height: 40px;
+/* Whole card is clickable through the heading link; other links stay on top */
+.news-card a.card-link::after { content: ''; position: absolute; inset: 0; }
+.news-card:has(a.card-link) :is(a:not(.card-link), button) { position: relative; z-index: 1; }
+.news-card a.card-link:focus-visible { outline: none; box-shadow: none; }
+.news-card:has(a.card-link:focus-visible) {
+	outline: 2px solid var(--ink);
+	outline-offset: 2px;
+	box-shadow: 0 0 0 2px var(--paper), 0 0 0 6px var(--paper);
 }
-.modern-news-carousel.owl-theme .owl-nav [class*='owl-']:hover { background: var(--on-grad) !important; color: var(--apt-blue) !important; }
+.news-card:has(a.card-link:hover) .news-card-title,
+.news-card:has(a.card-link:hover) .news-cta-btn { color: var(--apt-red); }
+.news-card:has(a.card-link:hover) > img { scale: 1.03; }
+@media (prefers-reduced-motion: reduce) {
+	.news-card:has(a.card-link:hover) > img { scale: 1; }
+}
+
+/* Layout follows the card's own width, not the viewport */
+.apt-slide { container-type: inline-size; }
+@container (min-width: 540px) {
+	.news-card:has(> img) {
+		display: grid;
+		grid-template-columns: 42% minmax(0, 1fr);
+		grid-template-rows: auto auto 1fr;
+		column-gap: 4px;
+	}
+	.news-card:has(> img) > img { grid-column: 1; grid-row: 1 / -1; height: 100%; aspect-ratio: auto; min-height: 260px; }
+	.news-card:has(> img) > :not(img) { grid-column: 2; padding-inline: 20px 24px; }
+	.news-card:has(> img) > .news-card-cta { align-self: end; }
+}
+
+.apt-carousel { display: grid; grid-template-columns: minmax(0, 1fr); }
+.apt-carousel-track {
+	grid-row: 1;
+	--gap: 20px;
+	display: flex;
+	gap: var(--gap);
+	overflow-x: auto;
+	scroll-snap-type: x mandatory;
+	overscroll-behavior-x: contain;
+	scrollbar-width: none;
+	touch-action: manipulation;
+	padding: 4px 0 24px; /* room for card shadows */
+	border-radius: var(--radius-tile);
+}
+.apt-carousel-track::-webkit-scrollbar { display: none; }
+@media (prefers-reduced-motion: no-preference) {
+	.apt-carousel-track { scroll-behavior: smooth; }
+}
+.apt-carousel-track > * {
+	flex: 0 0 84%;
+	scroll-snap-align: center;
+	display: flex;
+}
+/* One main card per view with a sliver of each neighbour. Slides stay wider
+   than half the track: the looping technique parks one end slide at a time,
+   and an end slide resting at the track edge must still be the one nearest
+   the centre. */
+@media (min-width: 640px) {
+	.apt-carousel-track > * { flex-basis: 72%; }
+}
+@media (min-width: 992px) {
+	.apt-carousel-track > * { flex-basis: 66%; }
+}
+.apt-slide .news-card { width: 100%; }
+
+/* Looping: park an end slide beside the current one (set by apt-carousel.js).
+   --children-count is only set where sibling-count() is unsupported. */
+.apt-carousel-track > :first-child {
+	order: clamp(0, var(--current) - (var(--children-count, sibling-count()) - 3), 1);
+}
+.apt-carousel-track > :last-child {
+	order: calc(-1 * clamp(0, 2 - var(--current), 1));
+}
+
+.apt-carousel-controls {
+	grid-row: 2;
+	grid-column: 1; /* share row 2 with the markers instead of creating a second column */
+	display: flex;
+	gap: 10px;
+	align-items: center;
+}
+.apt-carousel-markers {
+	grid-row: 2;
+	grid-column: 1;
+	justify-self: end;
+	align-self: center;
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+	gap: 2px;
+	padding-left: 120px; /* clear of the previous/next buttons on the same row */
+}
+.apt-carousel-btn {
+	width: 44px; height: 44px; padding: 0;
+	display: inline-flex; align-items: center; justify-content: center;
+	border-radius: 50%;
+	border: 1px solid var(--on-grad);
+	background: transparent;
+	color: var(--on-grad);
+	cursor: pointer;
+	touch-action: manipulation;
+}
+.apt-carousel-btn svg { width: 22px; height: 22px; }
+.apt-carousel-btn:hover { background: var(--on-grad); color: var(--apt-blue); }
+.apt-carousel-btn:disabled { opacity: 0.4; cursor: default; background: transparent; color: var(--on-grad); }
+/* 24px hit target around a small dot; active = wider pill, not colour alone */
+.apt-carousel-marker {
+	width: 24px; height: 24px; padding: 0;
+	border: 0; background: none; cursor: pointer;
+	display: inline-flex; align-items: center; justify-content: center;
+	touch-action: manipulation;
+}
+.apt-carousel-marker::before {
+	content: '';
+	width: 8px; height: 8px; border-radius: 999px;
+	background: rgba(255, 255, 255, 0.55);
+	transition: width 150ms ease-out, background-color 150ms ease-out;
+}
+.apt-carousel-marker:hover::before { background: var(--on-grad); }
+.apt-carousel-marker[aria-current="true"] { width: 34px; }
+.apt-carousel-marker[aria-current="true"]::before { width: 24px; background: var(--on-grad); }
+@media (max-width: 575.98px) {
+	.apt-carousel-markers { display: none; } /* swipe + buttons on phones; 12 dots don't fit */
+}
 
 /* ---------- Home: about / at a glance (on gradient) --------------------- */
 
@@ -562,7 +776,7 @@ body.apt-menu-open .apt-menu { transform: none; visibility: visible; }
 	gap: 0 14px;
 }
 .stat-card { grid-column: span 2; padding: 4px 0 20px; border-bottom: 1px solid var(--on-grad-rule); margin-bottom: 20px; }
-.stat-number { font-size: clamp(2.25rem, 4vw, 3.25rem); font-weight: 700; line-height: 1; margin-bottom: 6px; }
+.stat-number { font-size: clamp(2.25rem, 1.6rem + 2vw, 3.25rem); font-weight: 700; line-height: 1; margin-bottom: 6px; }
 .stat-label { font-size: 0.9rem; color: var(--on-grad-2); }
 .stat-card-blue .stat-number::after,
 .stat-card-yellow .stat-number::after,
@@ -601,39 +815,66 @@ body.apt-menu-open .apt-menu { transform: none; visibility: visible; }
 .resources-accordion { padding-top: 6px; padding-bottom: 6px; }
 .resource-accordion-item { border-bottom: 1px solid var(--rule); }
 .resource-accordion-item:last-child { border-bottom: 0; }
-.resource-accordion-btn,
-.agenda-month-btn {
-	width: 100%;
+
+/* Native <details>: marker sits right before the label, rotates open/closed */
+.resource-accordion-summary,
+.agenda-month-summary {
+	list-style: none;
 	display: flex;
 	align-items: center;
-	justify-content: space-between;
-	gap: 16px;
-	background: none;
-	border: 0;
+	gap: 0.6ch;
 	padding: 20px 0;
-	text-align: left;
 	color: var(--ink);
-	font-family: var(--font);
 	cursor: pointer;
+	border-radius: 6px;
 }
-.resource-accordion-btn { font-size: clamp(1.15rem, 2vw, 1.5rem); font-weight: 700; }
-.resource-accordion-btn:hover,
-.agenda-month-btn:hover { color: var(--apt-red); }
-.accordion-toggle,
-.month-toggle { flex: none; }
-.toggle-icon {
-	display: block; width: 28px; height: 28px;
+.resource-accordion-summary::-webkit-details-marker,
+.agenda-month-summary::-webkit-details-marker { display: none; }
+.resource-accordion-summary::before,
+.agenda-month-summary::before {
+	content: '';
+	flex: none;
+	inline-size: 1.1em;
+	block-size: 1.1em;
 	background-color: currentColor;
-	-webkit-mask: var(--icon-minus) center / contain no-repeat;
-	mask: var(--icon-minus) center / contain no-repeat;
+	-webkit-mask: var(--icon-chevron) no-repeat center / contain;
+	mask: var(--icon-chevron) no-repeat center / contain;
+	rotate: -90deg;
 }
-.collapsed .toggle-icon,
-[aria-expanded="false"] .toggle-icon { -webkit-mask-image: var(--icon-plus); mask-image: var(--icon-plus); }
+.resource-accordion-summary:dir(rtl)::before,
+.agenda-month-summary:dir(rtl)::before { rotate: 90deg; }
+details[open] > .resource-accordion-summary::before,
+details[open] > .agenda-month-summary::before { rotate: 0deg; }
+.resource-accordion-summary:hover,
+.agenda-month-summary:hover { color: var(--apt-red); }
+.resource-accordion-summary { font-size: clamp(1.15rem, 0.95rem + 0.7vw, 1.5rem); font-weight: 700; }
+
+/* Open/close slide; content stays findable with find-in-page */
+.resource-accordion-item::details-content,
+.agenda-month::details-content {
+	interpolate-size: allow-keywords;
+	overflow: clip;
+	contain: layout;
+}
+.resource-accordion-item:not([open])::details-content,
+.agenda-month:not([open])::details-content { block-size: 0; }
+@media (prefers-reduced-motion: no-preference) {
+	.resource-accordion-summary::before,
+	.agenda-month-summary::before { transition: rotate 0.2s; }
+	.resource-accordion-item::details-content,
+	.agenda-month::details-content {
+		transition: block-size, content-visibility;
+		transition-duration: 0.3s;
+		transition-timing-function: ease-in-out;
+		transition-behavior: allow-discrete;
+	}
+}
 
 .resource-accordion-content { padding-bottom: 24px; }
 .resource-cards-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; }
 @media (max-width: 991.98px) { .resource-cards-grid { grid-template-columns: 1fr; gap: 20px; } }
 .resource-content-title {
+	font-family: var(--font);
 	font-size: 1rem; font-weight: 600; color: var(--apt-blue);
 	padding-bottom: 10px; margin: 0 0 6px; border-bottom: 2px solid var(--apt-blue);
 }
@@ -674,16 +915,17 @@ body.apt-menu-open .apt-menu { transform: none; visibility: visible; }
 
 .agenda-year-section + .agenda-year-section { margin-top: 28px; }
 .agenda-year-title {
-	font-size: clamp(1.75rem, 3vw, 2.5rem); font-weight: 700;
+	font-size: clamp(1.75rem, 1.3rem + 1.5vw, 2.5rem); font-weight: 700;
 	padding-bottom: 10px; margin: 0; border-bottom: 1px solid var(--rule);
 }
-.agenda-month-btn { font-size: 1.15rem; font-weight: 600; border-bottom: 1px solid var(--rule-soft); }
+.agenda-month { border-bottom: 1px solid var(--rule-soft); }
+.agenda-month-summary { font-size: 1.15rem; font-weight: 600; }
+.agenda-month-body { padding-bottom: 12px; }
 .agenda-event-item {
 	display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 20px;
 	padding: 14px 0 14px 16px; margin: 6px 0;
 	border-left: 3px solid var(--rule-soft);
 }
-.agenda-event-item.collapse:not(.show) { display: none; }
 .agenda-item-summit { border-left-color: var(--apt-red); }
 .agenda-item-ministerial { border-left-color: var(--apt-blue); }
 .agenda-event-content { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; }
@@ -712,7 +954,7 @@ main.site-single {
 }
 .topic-head { border-bottom: 1px solid var(--rule) !important; padding-top: clamp(28px, 4vw, 48px) !important; margin-top: 0 !important; }
 .topic-head .container { margin-top: 0 !important; }
-.topic-head h1, .topic-head h2 { font-size: clamp(2rem, 4vw, 3rem) !important; font-weight: 700 !important; }
+.topic-head h1, .topic-head h2 { font-size: clamp(2rem, 1.4rem + 2vw, 3rem) !important; font-weight: 700 !important; }
 
 .site-main:not(.front-main) .btn-primary,
 .site-single .btn-primary {
@@ -751,7 +993,7 @@ main.site-single {
 .apt-footer-brand .apt-brand-text { font-size: 0.85rem; }
 .apt-social { display: flex; gap: 10px; list-style: none; margin: 0; padding: 0; }
 .apt-social a {
-	width: 40px; height: 40px; border-radius: 50%;
+	width: max(40px, var(--target-size)); height: max(40px, var(--target-size)); border-radius: 50%;
 	display: inline-flex; align-items: center; justify-content: center;
 	background: var(--on-grad); color: var(--apt-blue);
 	transition: transform 0.15s ease, background 0.15s ease;
@@ -765,7 +1007,7 @@ main.site-single {
 }
 .apt-footer-heading { font-size: 1.05rem; font-weight: 600; margin: 0 0 14px; color: var(--on-grad); }
 .apt-footer-cols ul { list-style: none; margin: 0; padding: 0; }
-.apt-footer-cols li { margin-bottom: 9px; font-size: 0.9rem; }
+.apt-footer-cols li { margin-bottom: 2px; font-size: 0.9rem; }
 .apt-footer-cols li a { display: inline-flex; align-items: center; color: var(--on-grad-2); }
 .apt-footer-cols li a:hover { color: var(--on-grad); }
 /* footer menu: one column per top-level item, first level of children below */
@@ -775,7 +1017,7 @@ main.site-single {
 	gap: 24px 28px;
 }
 .apt-footer-menu > li { margin: 0; }
-.apt-footer-menu > li > a { font-size: 1.05rem; font-weight: 600; color: var(--on-grad) !important; margin-bottom: 14px; }
+.apt-footer-menu > li > a { font-size: 1.05rem; font-weight: 600; color: var(--on-grad) !important; margin-bottom: 8px; }
 .apt-footer-menu .sub-menu .sub-menu { display: none; }
 @media (max-width: 991.98px) {
 	.apt-footer-cols { grid-template-columns: 1fr 1fr; }

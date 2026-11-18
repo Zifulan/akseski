@@ -6,9 +6,17 @@
 			<p class="apt-section-lede">Statements and outcomes from ASEAN Plus Three meetings.</p>
 			<a class="apt-pill apt-pill--light apt-arrow" href="<?php echo esc_url( get_category_link( 7 ) ); ?>">See all</a>
 		</div>
-		<div class="apt-news-track">
-		<div id="latestnewsCarousel" class="owl-carousel owl-theme modern-news-carousel">					
-			<?php		
+		<div class="apt-carousel" role="region" aria-roledescription="carousel" aria-label="Latest news and activities">
+			<div class="apt-carousel-controls">
+				<button type="button" class="apt-carousel-btn" data-direction="previous" aria-label="Previous slide">
+					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+				</button>
+				<button type="button" class="apt-carousel-btn" data-direction="next" aria-label="Next slide">
+					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+				</button>
+			</div>
+			<div class="apt-carousel-track" tabindex="0" role="group" aria-label="Slides">
+			<?php
 			$descats = get_categories(array('child_of' => 7));
 			$descats_arr = wp_list_pluck($descats, 'slug');
 			$fpn_cats = akseki_get_ministrial_categories();
@@ -22,8 +30,9 @@
 			];										
 			$latest_query = new WP_Query( $latest_args ); 
 			
-			if ( $latest_query->have_posts() ) : 
+			if ( $latest_query->have_posts() ) :
 				$key = 1;
+				$total = (int) $latest_query->post_count;
 				while ( $latest_query->have_posts() ) : $latest_query->the_post(); 
 					$latest['title'] = get_the_title();
 					$latest['id'] = get_the_ID();
@@ -36,14 +45,14 @@
 					// Level
 					$levobj=get_category(akseki_get_level_from_id($latest['id'],'post'));
 					if($levobj){
-						$ll='<div class="news-meta-item"><span class="meta-label">Level:</span> <a href="'.get_category_link($levobj->term_id).'">'.$levobj->name.'</a></div>';
+						$ll='<div class="news-meta-item"><dt class="meta-label">Level:</dt> <dd><a href="'.get_category_link($levobj->term_id).'">'.$levobj->name.'</a></dd></div>';
 					}else{
 						$ll='';
 					}
 					
 					// Pillar
 					$pilobj=get_category(akseki_get_level_from_id($latest['id'],'post','pillar'));
-					if($pilobj){
+					if($pilobj && '' !== trim($pilobj->name)){
 						$lp='<a class="apt-tag news-card-tag pillar-'.apt_pillar_key($pilobj->name).'" href="'.get_category_link($pilobj->term_id).'">'.$pilobj->name.'</a>';
 					}else{
 						$lp='';
@@ -53,15 +62,20 @@
 					$thmid = akseki_get_theme_from_id($latest['id'],'post');
 					if(!empty($thmid)){
 						$thmobj=get_post(akseki_get_theme_from_id($latest['id'],'post'));
-						$lt='<div class="news-meta-item"><span class="meta-label">Theme:</span> <a href="'.get_permalink($thmobj->ID).'">'.$thmobj->post_title.'</a></div>';
+						$lt='<div class="news-meta-item"><dt class="meta-label">Theme:</dt> <dd><a href="'.get_permalink($thmobj->ID).'">'.$thmobj->post_title.'</a></dd></div>';
 					}else{
 						$lt='';
 					}
 					
 					// Read more button
+					// Cards with content get a heading link (stretched over the card) and a
+					// "Read more" whose accessible name says what it is about.
+					$card_title = akseki_get_shortname($latest["title"],$latest["id"],0);
 					if(!has_tag("hasnocontent")){
-						$readmore = '<div class="news-card-cta"><a class="news-cta-btn apt-arrow" href="'.$latest["permalink"].'">Read more</a></div>';
-					}else{			
+						$heading = '<a class="card-link" href="'.esc_url($latest["permalink"]).'">'.$card_title.'</a>';
+						$readmore = '<footer class="news-card-cta"><a class="news-cta-btn apt-arrow" href="'.esc_url($latest["permalink"]).'">Read more<span class="screen-reader-text"> about '.esc_html(wp_strip_all_tags($latest["title"])).'</span></a></footer>';
+					}else{
+						$heading = $card_title;
 						$readmore = '';
 					}
 					
@@ -76,7 +90,7 @@
 					
 					// Full title display
 					if($latest['shortname'] !== $latest['title']){
-						$st = '<div class="news-card-subtitle">'.$latest["title"].'</div>';
+						$st = '<p class="news-card-subtitle">'.$latest["title"].'</p>';
 					}else{
 						$st = '';
 					}
@@ -89,65 +103,32 @@
 					endif;
 					
 					$latest_card = '
-						<div class="latest-item">
-							<div class="news-card '.$cardClass.'" id="card_com-'.get_the_id().'">
-								<div class="news-card-image-wrapper">
-									<img src="'.esc_url($thethumb).'" class="news-card-image" alt="" loading="lazy"/>
-									<div class="news-card-image-overlay"></div>
-								</div>
-								
-								<div class="news-card-body">
+						<div class="apt-slide" role="group" aria-roledescription="slide" aria-label="'.$key.' of '.$total.'" data-marker-name="'.esc_attr('Go to slide '.$key.': '.wp_strip_all_tags($latest['shortname'])).'">
+							<article class="news-card '.$cardClass.'" id="card_com-'.get_the_id().'">
+								'.($thethumb ? '<img src="'.esc_url($thethumb).'" class="news-card-image" alt="" loading="lazy"/>' : '').'
+								<header class="news-card-header">
 									'.$lp.'
-									<h3 class="news-card-title">'.akseki_get_shortname($latest["title"],$latest["id"],0).'</h3>'
-									.$st.
-									'<div class="news-card-date">'.akseki_get_the_meta($latest["id"]).'</div>
-									
-									<div class="news-meta-grid">
-										'.$ll.$lt.'
-										<div class="news-meta-item"><span class="meta-label">Topic:</span> <a href="'.get_category_link($latest["category"]).'">'.$latest["category"]->description.'</a></div>
-									</div>
-									'.$readmore.'
-								</div>
-							</div>
+									<h3 class="news-card-title">'.$heading.'</h3>
+									'.$st.'
+									<p class="news-card-date">'.akseki_get_the_meta($latest["id"]).'</p>
+								</header>
+								<dl class="news-meta-grid">
+									'.$ll.$lt.'
+									<div class="news-meta-item"><dt class="meta-label">Topic:</dt> <dd><a href="'.get_category_link($latest["category"]).'">'.$latest["category"]->description.'</a></dd></div>
+								</dl>
+								'.$readmore.'
+							</article>
 						</div>';
 					echo($latest_card);
 					++$key;
 				endwhile;
 			endif;
-			wp_reset_postdata(); 
+			wp_reset_postdata();
 			?>
-		</div>
+			</div>
+			<p class="screen-reader-text apt-carousel-status" role="status" aria-live="polite"></p>
+			<nav class="apt-carousel-markers" aria-label="Choose a slide"></nav>
 		</div>
 		</div>
 	</div>
 </section>
-
-
-
-<script type="text/javascript">	
-jQuery(function($) {						
-	$("#latestnewsCarousel").owlCarousel({
-		items:3,
-		loop:true,
-		dots:false,
-		nav:true,
-		navText:['<span aria-hidden="true">&larr;</span><span class="screen-reader-text">Previous</span>','<span aria-hidden="true">&rarr;</span><span class="screen-reader-text">Next</span>'],
-		margin:20,
-		autoplay:true,
-		autoplayTimeout:6000,
-		autoplayHoverPause:true,
-		responsiveClass:true,						
-		responsive:{
-			0:{
-				items:1									
-			},
-			640:{
-				items:2								
-			},
-			1200:{
-				items:3
-			}
-		}
-	});				
-});
-</script>

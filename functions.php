@@ -34,6 +34,10 @@ function avi_enqueue() {
 	wp_enqueue_style( 'apt-design', get_stylesheet_directory_uri() . $apt_css, array( 'bootstrapstarter-style', 'owl', 'owldefaulttheme', 'apt-font-outfit' ), filemtime( get_stylesheet_directory() . $apt_css ) );
 	$apt_js = '/assets/js/apt-nav.js';
 	wp_enqueue_script( 'apt-nav', get_stylesheet_directory_uri() . $apt_js, array(), filemtime( get_stylesheet_directory() . $apt_js ), true );
+	$apt_carousel = '/assets/js/apt-carousel.js';
+	if ( is_front_page() ) {
+		wp_enqueue_script( 'apt-carousel', get_stylesheet_directory_uri() . $apt_carousel, array(), filemtime( get_stylesheet_directory() . $apt_carousel ), true );
+	}
 }
 
 add_action( 'wp_enqueue_scripts', 'avi_enqueue' );
@@ -62,6 +66,78 @@ function apt_mega_menu_items( $items, $args ) {
 	} ) );
 }
 add_filter( 'wp_nav_menu_objects', 'apt_mega_menu_items', 10, 2 );
+
+/**
+ * Turn an ordinal ("29th", "twenty-ninth", "Twenty Ninth") into an integer, or 0.
+ */
+function apt_ordinal_to_int( $ordinal ) {
+	$ordinal = strtolower( trim( $ordinal ) );
+	if ( preg_match( '/^(\d{1,3})(?:st|nd|rd|th)$/', $ordinal, $m ) ) {
+		return (int) $m[1];
+	}
+	$units = array(
+		'first' => 1, 'second' => 2, 'third' => 3, 'fourth' => 4, 'fifth' => 5, 'sixth' => 6,
+		'seventh' => 7, 'eighth' => 8, 'ninth' => 9, 'tenth' => 10, 'eleventh' => 11, 'twelfth' => 12,
+		'thirteenth' => 13, 'fourteenth' => 14, 'fifteenth' => 15, 'sixteenth' => 16,
+		'seventeenth' => 17, 'eighteenth' => 18, 'nineteenth' => 19, 'twentieth' => 20,
+		'thirtieth' => 30, 'fortieth' => 40, 'fiftieth' => 50,
+	);
+	$tens = array( 'twenty' => 20, 'thirty' => 30, 'forty' => 40, 'fifty' => 50 );
+	if ( isset( $units[ $ordinal ] ) ) {
+		return $units[ $ordinal ];
+	}
+	if ( preg_match( '/^(twenty|thirty|forty|fifty)[\s-]+(first|second|third|fourth|fifth|sixth|seventh|eighth|ninth)$/', $ordinal, $m ) ) {
+		return $tens[ $m[1] ] + $units[ $m[2] ];
+	}
+	return 0;
+}
+
+/**
+ * Number of ASEAN Plus Three Summits held so far: the highest summit ordinal
+ * ("29th ASEAN Plus Three Summit", "Twenty-Ninth APT Summit", "27th ASEAN+3
+ * Summit") found in published posts dated today or earlier. Scheduled agenda
+ * entries are not published, so upcoming summits are not counted.
+ * Cached for 12 hours and refreshed whenever a post is saved.
+ */
+function apt_get_summit_count() {
+	$cached = get_transient( 'apt_summit_count' );
+	if ( false !== $cached ) {
+		return (int) $cached;
+	}
+
+	$ids = get_posts( array(
+		'post_type'        => 'post',
+		'post_status'      => 'publish',
+		's'                => 'Summit',
+		'fields'           => 'ids',
+		'posts_per_page'   => -1,
+		'no_found_rows'    => true,
+		'suppress_filters' => true,
+		'date_query'       => array( array( 'before' => 'tomorrow', 'inclusive' => false ) ),
+	) );
+
+	$ordinal_re = '(\d{1,3}(?:st|nd|rd|th)|(?:(?:twenty|thirty|forty|fifty)[\s-]+)?(?:first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|eleventh|twelfth|thirteenth|fourteenth|fifteenth|sixteenth|seventeenth|eighteenth|nineteenth)|twentieth|thirtieth|fortieth|fiftieth)';
+	// "29th ASEAN Plus Three Summit", "29th ASEAN Plus Three (APT) Summit", "29th APT Summit", "27th ASEAN+3 Summit"
+	$summit_re  = '/\b' . $ordinal_re . '\s+(?:APT|ASEAN\s*(?:Plus\s*Three|\+\s*3))(?:\s*\((?:APT|ASEAN\s*\+\s*3)\))?\s+Summit\b/i';
+
+	$max = 0;
+	foreach ( $ids as $id ) {
+		$texts = array( wp_strip_all_tags( get_the_title( $id ) ), akseki_get_sm( $id ) );
+		foreach ( $texts as $text ) {
+			if ( $text && preg_match_all( $summit_re, html_entity_decode( $text, ENT_QUOTES, 'UTF-8' ), $m ) ) {
+				foreach ( $m[1] as $ordinal ) {
+					$max = max( $max, apt_ordinal_to_int( $ordinal ) );
+				}
+			}
+		}
+	}
+
+	set_transient( 'apt_summit_count', $max, 12 * HOUR_IN_SECONDS );
+	return $max;
+}
+add_action( 'save_post', function () {
+	delete_transient( 'apt_summit_count' );
+} );
 
 /**
  * Map a pillar category name to a colour key used by the design system

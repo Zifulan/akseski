@@ -20,6 +20,7 @@ $SE_query = new WP_Query(array(
 
 if($SE_query->have_posts()):
 	$tempyear = $tempmonth = $tempdtdcount = 0;
+	$month_open = $year_open = false;
 	$prevtagSCyear = false;
 	$whileelement = 1;
 	$firstbutton=0;
@@ -68,14 +69,16 @@ if($SE_query->have_posts()):
 		} else {
 			$qyear = get_the_date('Y');
 			if($qyear !== $tempyear){
-				if($tempdtdcount==0){
-					$is_dtd .= '<div class="agenda-year-section">';
-				}else{
-					$is_dtd .= '</div><div class="agenda-year-section">';
+				if($month_open){
+					$is_dtd .= '</div></details>';
+					$month_open = false;
 				}
-				$is_dtd .= '<h3 class="agenda-year-title">'.$qyear.'</h3>'; 
+				if($year_open){
+					$is_dtd .= '</div>';
+				}
+				$is_dtd .= '<div class="agenda-year-section"><h3 class="agenda-year-title">'.$qyear.'</h3>';
+				$year_open = true;
 				$tempyear = $qyear;
-				$tempdtdcount = 1;
 			}
 			
 			if(!has_tag("SC_year")){
@@ -106,12 +109,12 @@ if($SE_query->have_posts()):
 					$fy = get_the_date("Y")." tbd";
 					$collapserid = '13'.get_the_date('Y');
 				}
-				$is_dtd .= '<button class="agenda-month-btn" type="button" data-toggle="collapse" data-target="#collapse'.$collapserid.'" aria-expanded="'.$firstbuttonaria.'">
-								<span class="month-text">'.$fy.'</span>
-								<span class="month-toggle">
-									<span class="toggle-icon"></span>
-								</span>
-							</button>';
+				if($month_open){
+					$is_dtd .= '</div></details>';
+				}
+				// The first month starts open; each month is a native disclosure.
+				$is_dtd .= '<details class="agenda-month"'.($firstbutton==0?' open':'').'><summary class="agenda-month-summary">'.$fy.'</summary><div class="agenda-month-body">';
+				$month_open = true;
 				$tempmonth = $qmonth;
 				++$firstbutton;
 			}
@@ -122,7 +125,7 @@ if($SE_query->have_posts()):
 				$prevtagSCyear = false;
 			}
 
-			$is_dtd .= '<div class="agenda-event-item'.$levelClass.' collapse'.($firstbutton==1?" show":"").'" id="'.$collapser.'">
+			$is_dtd .= '<div class="agenda-event-item'.$levelClass.'">
 							<div class="agenda-event-content">
 								'.$datedisplay.$flagdisplay.'
 								<span class="agenda-event-title">'.akseki_get_shortname(get_the_title(), get_the_ID()).'</span>
@@ -133,7 +136,12 @@ if($SE_query->have_posts()):
 		
 		++$whileelement;
 	endwhile;
-	$is_dtd .= '</div>';
+	if($month_open){
+		$is_dtd .= '</div></details>';
+	}
+	if($year_open){
+		$is_dtd .= '</div>';
+	}
 endif;
 wp_reset_postdata();
 ?>
@@ -157,36 +165,14 @@ wp_reset_postdata();
 			<?php if($is_tbd !== ""):?>
 			<div class="agenda-year-section">
 				<h3 class="agenda-year-title">To Be Determined</h3>
-				<button class="agenda-month-btn collapsed" type="button" data-toggle="collapse" data-target="#collapsetbd" aria-expanded="false">
-					<span class="month-text">TBD</span>
-					<span class="month-toggle">
-						<span class="toggle-icon"></span>
-					</span>
-				</button>
-				<div class="collapse" id="collapsetbd">
-					<?php echo($is_tbd);?>
-				</div>
+				<details class="agenda-month">
+					<summary class="agenda-month-summary">TBD</summary>
+					<div class="agenda-month-body">
+						<?php echo($is_tbd);?>
+					</div>
+				</details>
 			</div>
 			<?php endif;?>
 		</div>
 	</div>
 </section>
-
-
-
-<script>
-jQuery(function($) {
-	// Agenda month accordion functionality
-	$('.agenda-month-btn').on('click', function() {
-		$(this).toggleClass('collapsed');
-	});
-	
-	// Initialize collapsed states
-	$('.agenda-month-btn').each(function() {
-		const targetId = $(this).attr('data-target');
-		if (!$(targetId).hasClass('show')) {
-			$(this).addClass('collapsed');
-		}
-	});
-});
-</script>

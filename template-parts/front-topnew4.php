@@ -36,12 +36,16 @@
 				$ftn_short = $ftn_title;
 			}
 
+			$thumb_id = get_post_thumbnail_id( $ftn_ID );
+			$thumb    = wp_get_attachment_image_src( $thumb_id ? $thumb_id : 1007, 'large' );
 			$item = [
 				'short' => $ftn_short,
 				'title' => $ftn_title,
 				'link'  => get_the_permalink(),
 				'meta'  => akseki_get_the_meta( $ftn_ID ),
 				'img'   => a_get_the_post_thumbnail_url( 'large' ),
+				'w'     => $thumb ? (int) $thumb[1] : 0,
+				'h'     => $thumb ? (int) $thumb[2] : 0,
 			];
 
 			if ( null === $ftn_feature ) {
@@ -63,7 +67,8 @@
 
 		<?php if ( $ftn_feature ) : ?>
 		<a class="apt-hero-feature" href="<?php echo esc_url( $ftn_feature['link'] ); ?>">
-			<img src="<?php echo esc_url( $ftn_feature['img'] ); ?>" alt="" fetchpriority="high">
+			<?php /* LCP image: high priority, never lazy; intrinsic size prevents layout shift */ ?>
+			<img src="<?php echo esc_url( $ftn_feature['img'] ); ?>" alt=""<?php if ( $ftn_feature['w'] && $ftn_feature['h'] ) : ?> width="<?php echo (int) $ftn_feature['w']; ?>" height="<?php echo (int) $ftn_feature['h']; ?>"<?php endif; ?> fetchpriority="high">
 			<span class="apt-hero-feature-label">Latest</span>
 			<span class="apt-hero-feature-cap">
 				<span>

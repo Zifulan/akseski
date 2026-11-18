@@ -1,81 +1,111 @@
-/* APT off-canvas mega menu */
+/*
+ * APT menu drawer.
+ *
+ * A modal <dialog> (page becomes inert, Escape and focus return are native)
+ * holding a horizontal scroll-snap scroller with two stops: the empty spacer
+ * on the left = closed, the sheet on the right = open. Swiping the sheet away
+ * is plain native scrolling; an IntersectionObserver on the sheet is the single
+ * source of truth for "fully open" / "fully closed".
+ */
 (function () {
 	'use strict';
 
-	var menu = document.getElementById('apt-menu');
-	var toggle = document.querySelector('.apt-menu-toggle');
-	if (!menu || !toggle) {
+	var drawer = document.getElementById('apt-menu');
+	var openBtn = document.querySelector('.apt-menu-toggle');
+	if (!drawer || !openBtn || typeof drawer.showModal !== 'function') {
 		return;
 	}
-	var body = document.body;
-	var lastFocus = null;
+	var scroller = drawer.querySelector('.apt-menu-scroller');
+	var sheet = drawer.querySelector('.apt-menu-sheet');
+	var panel = drawer.querySelector('.apt-menu-panel');
+	var closeBtn = drawer.querySelector('.apt-menu-close');
 
-	function focusables() {
-		return menu.querySelectorAll('a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])');
+	function nextFrames() {
+		return new Promise(function (resolve) {
+			requestAnimationFrame(function () { requestAnimationFrame(resolve); });
+		});
 	}
 
-	function open() {
-		lastFocus = document.activeElement;
-		body.classList.add('apt-menu-open');
-		toggle.setAttribute('aria-expanded', 'true');
-		menu.setAttribute('aria-modal', 'true');
-		menu.setAttribute('role', 'dialog');
-		var closeBtn = menu.querySelector('.apt-menu-close');
-		window.setTimeout(function () { (closeBtn || menu).focus(); }, 50);
+	function openDrawer() {
+		drawer.showModal();
+		// The closed stop is scrollLeft 0, which is also where a fresh scroller
+		// starts, but force it where scroll-initial-target is unsupported in
+		// case a previous close was interrupted.
+		var ready = Promise.resolve();
+		if (!(window.CSS && CSS.supports('scroll-initial-target', 'nearest')) && scroller.scrollLeft !== 0) {
+			scroller.scrollTo({ left: 0, behavior: 'instant' });
+			ready = nextFrames();
+		}
+		ready.then(function () {
+			// 'auto' defers to CSS scroll-behavior: smooth unless reduced motion.
+			scroller.scrollTo({ left: scroller.scrollWidth, behavior: 'auto' });
+		});
 	}
 
-	function close() {
-		body.classList.remove('apt-menu-open');
-		toggle.setAttribute('aria-expanded', 'false');
-		menu.removeAttribute('aria-modal');
-		menu.removeAttribute('role');
-		if (lastFocus && lastFocus.focus) {
-			lastFocus.focus();
-		}
+	function closeDrawer() {
+		// Don't close() here: the observer closes the dialog once the sheet has
+		// actually slid out, so the exit animation stays visible.
+		scroller.scrollTo({ left: 0, behavior: 'auto' });
 	}
 
-	toggle.addEventListener('click', function () {
-		if (body.classList.contains('apt-menu-open')) {
-			close();
-		} else {
-			open();
+	function onDrawerOpened() {
+		openBtn.setAttribute('aria-expanded', 'true');
+	}
+
+	function onDrawerClosed() {
+		if (drawer.open) {
+			drawer.close(); // returns focus to the menu button
 		}
-	});
+		openBtn.setAttribute('aria-expanded', 'false');
+	}
 
-	document.querySelectorAll('[data-apt-menu-close]').forEach(function (el) {
-		el.addEventListener('click', close);
-	});
-
-	// Same-page anchors (e.g. /#front-news) should close the panel.
-	menu.addEventListener('click', function (e) {
-		var a = e.target.closest('a[href*="#"]');
-		if (a && a.pathname === window.location.pathname) {
-			close();
-		}
-	});
-
-	document.addEventListener('keydown', function (e) {
-		if (!body.classList.contains('apt-menu-open')) {
+	var visibleThreshold = 1 / window.innerWidth;
+	new IntersectionObserver(function (entries) {
+		var entry = entries[entries.length - 1];
+		if (!drawer.open) {
 			return;
 		}
-		if (e.key === 'Escape') {
-			close();
-			return;
+		if (entry.intersectionRatio < visibleThreshold) {
+			onDrawerClosed();
+		} else if (entry.intersectionRatio >= 0.99) {
+			onDrawerOpened();
 		}
-		if (e.key === 'Tab') {
-			var items = focusables();
-			if (!items.length) {
-				return;
-			}
-			var first = items[0];
-			var last = items[items.length - 1];
-			if (e.shiftKey && document.activeElement === first) {
-				e.preventDefault();
-				last.focus();
-			} else if (!e.shiftKey && document.activeElement === last) {
-				e.preventDefault();
-				first.focus();
-			}
+	}, { root: drawer, threshold: [visibleThreshold, 0.99, 1] }).observe(sheet);
+
+	// Backdrop fade fallback where scroll-driven animations are unsupported.
+	if (!(window.CSS && CSS.supports('animation-timeline: scroll()'))) {
+		scroller.addEventListener('scroll', function () {
+			var ratio = Math.min(1, Math.max(0, scroller.scrollLeft / sheet.offsetWidth));
+			drawer.style.setProperty('--menu-backdrop', ratio);
+		}, { passive: true });
+	}
+
+	openBtn.addEventListener('click', openDrawer);
+	closeBtn.addEventListener('click', closeDrawer);
+
+	// Tap on the dimmed area (inside the full-viewport dialog, outside the
+	// white panel) closes with the slide-out.
+	drawer.addEventListener('click', function (event) {
+		if (!panel.contains(event.target)) {
+			closeDrawer();
+		}
+	});
+
+	// Escape: slide out instead of the instant native close.
+	drawer.addEventListener('cancel', function (event) {
+		if (event.cancelable) {
+			event.preventDefault();
+			closeDrawer();
+		}
+	});
+
+	// Links to a section of the current page: close at once so the page can scroll.
+	panel.addEventListener('click', function (event) {
+		var link = event.target.closest('a[href*="#"]');
+		if (link && link.pathname === window.location.pathname && link.hash) {
+			drawer.close();
+			scroller.scrollTo({ left: 0, behavior: 'instant' });
+			openBtn.setAttribute('aria-expanded', 'false');
 		}
 	});
 })();
