@@ -42,31 +42,36 @@
 						<button type="button" class="apt-header-btn" data-toggle="modal" data-target="#searchModal" aria-label="<?php esc_attr_e( 'Search', 'akseki-vi' ); ?>">
 							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
 						</button>
-						<button type="button" class="apt-header-btn apt-menu-toggle" aria-controls="apt-menu" aria-expanded="false" aria-label="<?php esc_attr_e( 'Open menu', 'akseki-vi' ); ?>">
+						<button type="button" class="apt-header-btn apt-menu-toggle" aria-controls="apt-menu" aria-expanded="false" aria-label="<?php esc_attr_e( 'Menu', 'akseki-vi' ); ?>">
 							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
 						</button>
 					</div>
 				</header>
 
-				<div class="apt-menu-backdrop" data-apt-menu-close></div>
-				<nav class="apt-menu" id="apt-menu" aria-label="<?php esc_attr_e( 'Main menu', 'akseki-vi' ); ?>">
-					<div class="apt-menu-top">
-						<button type="button" class="apt-menu-close" data-apt-menu-close aria-label="<?php esc_attr_e( 'Close menu', 'akseki-vi' ); ?>">
-							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
-						</button>
+				<dialog class="apt-menu" id="apt-menu" aria-label="<?php esc_attr_e( 'Menu', 'akseki-vi' ); ?>">
+					<div class="apt-menu-scroller">
+						<div class="apt-menu-sheet">
+							<nav class="apt-menu-panel" aria-label="<?php esc_attr_e( 'Main', 'akseki-vi' ); ?>">
+								<div class="apt-menu-top">
+									<button type="button" class="apt-menu-close" aria-label="<?php esc_attr_e( 'Close menu', 'akseki-vi' ); ?>" autofocus>
+										<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+									</button>
+								</div>
+								<?php
+								wp_nav_menu( array(
+									'theme_location' => 'primary',
+									'depth'          => 3,
+									'container'      => false,
+									'menu_class'     => 'apt-menu-list',
+									'menu_id'        => 'apt-menu-list',
+									'fallback_cb'    => false,
+									'apt_mega'       => true,
+								) );
+								?>
+							</nav>
+						</div>
 					</div>
-					<?php
-					wp_nav_menu( array(
-						'theme_location' => 'primary',
-						'depth'          => 3,
-						'container'      => false,
-						'menu_class'     => 'apt-menu-list',
-						'menu_id'        => 'apt-menu-list',
-						'fallback_cb'    => false,
-						'apt_mega'       => true,
-					) );
-					?>
-				</nav>
+				</dialog>
 
 <!-- Search Modal -->
 <div class="modal fade bd-example-modal-lg" id="searchModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">

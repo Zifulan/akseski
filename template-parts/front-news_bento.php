@@ -6,9 +6,17 @@
 			<p class="apt-section-lede">Statements and outcomes from ASEAN Plus Three meetings.</p>
 			<a class="apt-pill apt-pill--light apt-arrow" href="<?php echo esc_url( get_category_link( 7 ) ); ?>">See all</a>
 		</div>
-		<div class="apt-news-track">
-		<div id="latestnewsCarousel" class="owl-carousel owl-theme modern-news-carousel">					
-			<?php		
+		<div class="apt-carousel" role="region" aria-roledescription="carousel" aria-label="Latest news and activities">
+			<div class="apt-carousel-controls">
+				<button type="button" class="apt-carousel-btn" data-direction="previous" aria-label="Previous slide">
+					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+				</button>
+				<button type="button" class="apt-carousel-btn" data-direction="next" aria-label="Next slide">
+					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+				</button>
+			</div>
+			<div class="apt-carousel-track" tabindex="0" role="group" aria-label="Slides">
+			<?php
 			$descats = get_categories(array('child_of' => 7));
 			$descats_arr = wp_list_pluck($descats, 'slug');
 			$fpn_cats = akseki_get_ministrial_categories();
@@ -22,8 +30,9 @@
 			];										
 			$latest_query = new WP_Query( $latest_args ); 
 			
-			if ( $latest_query->have_posts() ) : 
+			if ( $latest_query->have_posts() ) :
 				$key = 1;
+				$total = (int) $latest_query->post_count;
 				while ( $latest_query->have_posts() ) : $latest_query->the_post(); 
 					$latest['title'] = get_the_title();
 					$latest['id'] = get_the_ID();
@@ -43,7 +52,7 @@
 					
 					// Pillar
 					$pilobj=get_category(akseki_get_level_from_id($latest['id'],'post','pillar'));
-					if($pilobj){
+					if($pilobj && '' !== trim($pilobj->name)){
 						$lp='<a class="apt-tag news-card-tag pillar-'.apt_pillar_key($pilobj->name).'" href="'.get_category_link($pilobj->term_id).'">'.$pilobj->name.'</a>';
 					}else{
 						$lp='';
@@ -89,7 +98,7 @@
 					endif;
 					
 					$latest_card = '
-						<div class="latest-item">
+						<div class="apt-slide" role="group" aria-roledescription="slide" aria-label="'.$key.' of '.$total.'" data-marker-name="'.esc_attr('Go to slide '.$key.': '.wp_strip_all_tags($latest['shortname'])).'">
 							<div class="news-card '.$cardClass.'" id="card_com-'.get_the_id().'">
 								<div class="news-card-image-wrapper">
 									<img src="'.esc_url($thethumb).'" class="news-card-image" alt="" loading="lazy"/>
@@ -114,40 +123,12 @@
 					++$key;
 				endwhile;
 			endif;
-			wp_reset_postdata(); 
+			wp_reset_postdata();
 			?>
-		</div>
+			</div>
+			<p class="screen-reader-text apt-carousel-status" role="status" aria-live="polite"></p>
+			<nav class="apt-carousel-markers" aria-label="Choose a slide"></nav>
 		</div>
 		</div>
 	</div>
 </section>
-
-
-
-<script type="text/javascript">	
-jQuery(function($) {						
-	$("#latestnewsCarousel").owlCarousel({
-		items:3,
-		loop:true,
-		dots:false,
-		nav:true,
-		navText:['<span aria-hidden="true">&larr;</span><span class="screen-reader-text">Previous</span>','<span aria-hidden="true">&rarr;</span><span class="screen-reader-text">Next</span>'],
-		margin:20,
-		autoplay:true,
-		autoplayTimeout:6000,
-		autoplayHoverPause:true,
-		responsiveClass:true,						
-		responsive:{
-			0:{
-				items:1									
-			},
-			640:{
-				items:2								
-			},
-			1200:{
-				items:3
-			}
-		}
-	});				
-});
-</script>

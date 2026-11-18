@@ -15,7 +15,6 @@
 			<div class="apt-about-stats">
 				<?php
 				$years = floor((strtotime("today")-strtotime("1997-12-15"))/31556952);
-				$summit = get_category(41);
 				$min2 = akseki_get_ministrial_categories();
 				$totmincount = 0;
 				foreach($min2 as $min){			
@@ -32,8 +31,8 @@
 					</div>
 					
 					<div class="stat-card stat-card-yellow">
-						
-						<div class="stat-number"><?php echo $years; ?></div>
+						<?php $summits = apt_get_summit_count(); ?>
+						<div class="stat-number"><?php echo esc_html( $summits ? $summits : '&mdash;' ); ?></div>
 						<div class="stat-label">Summit Level Activities</div>
 					</div>
 					
