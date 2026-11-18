@@ -42,12 +42,19 @@
 
 	--font: 'Outfit', 'Helvetica Neue', Arial, sans-serif;
 
+	/* Minimum hit area: 24px (WCAG 2.5.8), 44px where the pointer is a finger */
+	--target-size: 24px;
+
 	/* Circled-arrow icon, painted with currentColor through a mask */
 	--icon-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M8 12h8M12.5 8.5 16 12l-3.5 3.5'/%3E%3C/svg%3E");
 	--icon-ext: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M9 15l6-6M10 9h5v5'/%3E%3C/svg%3E");
 	--icon-plus: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M12 8v8M8 12h8'/%3E%3C/svg%3E");
 	--icon-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
 	--icon-minus: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M8 12h8'/%3E%3C/svg%3E");
+}
+
+@media (pointer: coarse) {
+	:root { --target-size: 44px; }
 }
 
 /* ---------- Base ---------------------------------------------------------- */
@@ -135,6 +142,22 @@ a:hover { color: var(--apt-red); }
 #main section { min-height: 0 !important; scroll-snap-align: none !important; }
 
 /* ---------- Shared pieces ------------------------------------------------- */
+
+/* Target sizes: grow the hit area with min-size (never a fixed size, so
+   content can still make it bigger). Links inside sentences are exempt. */
+:where(
+	.apt-menu-list a, .apt-footer-cols a, .apt-social a, .apt-quicklinks a,
+	.apt-pill, .apt-tag, .news-meta-item a, .news-cta-btn,
+	.apt-carousel-btn, .apt-carousel-marker,
+	.site-main .page-link, .site-main .btn
+) {
+	min-block-size: var(--target-size);
+	min-inline-size: var(--target-size);
+}
+:where(.apt-footer-cols a, .apt-quicklinks a, .news-meta-item a, .news-cta-btn, .site-main .page-link, .site-main .btn) {
+	display: inline-flex;
+	align-items: center;
+}
 
 /* Circled arrow, placed after a link label */
 .apt-arrow::after,
@@ -391,8 +414,8 @@ html:has(.apt-menu[open]) { overflow: hidden; }
 .apt-menu-list > li > .sub-menu {
 	display: grid;
 	grid-template-columns: repeat(2, minmax(0, 1fr));
-	gap: 14px 28px;
-	margin-top: 16px;
+	gap: 4px 28px; /* links are now >= the target size tall */
+	margin-top: 12px;
 }
 .apt-menu-list .sub-menu a {
 	display: inline-flex;
@@ -412,7 +435,7 @@ html:has(.apt-menu[open]) { overflow: hidden; }
 .apt-menu-list .current-menu-item > a { color: var(--apt-red); font-weight: 600; }
 /* third level: indented, smaller, no icon */
 .apt-menu-list .sub-menu .sub-menu { margin: 8px 0 0 2px; padding-left: 12px; border-left: 2px solid var(--rule-soft); }
-.apt-menu-list .sub-menu .sub-menu li + li { margin-top: 6px; }
+.apt-menu-list .sub-menu .sub-menu li + li { margin-top: 0; }
 .apt-menu-list .sub-menu .sub-menu a { font-size: 0.9rem; color: var(--ink-2); }
 .apt-menu-list .sub-menu .sub-menu a::after { display: none; }
 
@@ -591,7 +614,7 @@ html:has(.apt-menu[open]) { overflow: hidden; }
 }
 .news-card > :not(img) { padding-inline: 20px; }
 .news-card-header { padding-top: 18px; }
-.news-card-tag { margin-bottom: 8px; }
+.news-card-tag { margin-bottom: 4px; }
 .news-card-title { font-size: 1.15rem; font-weight: 700; line-height: 1.25; margin: 0 0 6px; }
 .news-card-title a { color: inherit; text-decoration: none; }
 .news-card-subtitle {
@@ -600,7 +623,7 @@ html:has(.apt-menu[open]) { overflow: hidden; }
 }
 .news-card-date { font-size: 0.85rem; color: var(--ink-2); margin: 0 0 12px; }
 .news-meta-grid { border-top: 1px solid var(--rule-soft); padding-top: 10px; margin: 0 0 14px; }
-.news-meta-item { font-size: 0.8rem; line-height: 1.45; color: var(--ink-3); margin-bottom: 4px; }
+.news-meta-item { font-size: 0.8rem; line-height: 1.45; color: var(--ink-3); margin-bottom: 0; display: flex; flex-wrap: wrap; align-items: center; column-gap: 4px; }
 .news-meta-item dt, .news-meta-item dd { display: inline; margin: 0; }
 .news-meta-item .meta-label { color: var(--ink-2); font-weight: 500; }
 .news-meta-item a { color: var(--ink-2); text-decoration: underline; text-decoration-color: var(--rule-soft); text-underline-offset: 2px; }
@@ -970,7 +993,7 @@ main.site-single {
 .apt-footer-brand .apt-brand-text { font-size: 0.85rem; }
 .apt-social { display: flex; gap: 10px; list-style: none; margin: 0; padding: 0; }
 .apt-social a {
-	width: 40px; height: 40px; border-radius: 50%;
+	width: max(40px, var(--target-size)); height: max(40px, var(--target-size)); border-radius: 50%;
 	display: inline-flex; align-items: center; justify-content: center;
 	background: var(--on-grad); color: var(--apt-blue);
 	transition: transform 0.15s ease, background 0.15s ease;
@@ -984,7 +1007,7 @@ main.site-single {
 }
 .apt-footer-heading { font-size: 1.05rem; font-weight: 600; margin: 0 0 14px; color: var(--on-grad); }
 .apt-footer-cols ul { list-style: none; margin: 0; padding: 0; }
-.apt-footer-cols li { margin-bottom: 9px; font-size: 0.9rem; }
+.apt-footer-cols li { margin-bottom: 2px; font-size: 0.9rem; }
 .apt-footer-cols li a { display: inline-flex; align-items: center; color: var(--on-grad-2); }
 .apt-footer-cols li a:hover { color: var(--on-grad); }
 /* footer menu: one column per top-level item, first level of children below */
@@ -994,7 +1017,7 @@ main.site-single {
 	gap: 24px 28px;
 }
 .apt-footer-menu > li { margin: 0; }
-.apt-footer-menu > li > a { font-size: 1.05rem; font-weight: 600; color: var(--on-grad) !important; margin-bottom: 14px; }
+.apt-footer-menu > li > a { font-size: 1.05rem; font-weight: 600; color: var(--on-grad) !important; margin-bottom: 8px; }
 .apt-footer-menu .sub-menu .sub-menu { display: none; }
 @media (max-width: 991.98px) {
 	.apt-footer-cols { grid-template-columns: 1fr 1fr; }
