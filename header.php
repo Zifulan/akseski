@@ -1,6 +1,7 @@
 <!doctype html>
 <html <?php language_attributes(); ?>>
 	<head>
+        <?php if ( 'production' === wp_get_environment_type() ) : // staging copies: define( 'WP_ENVIRONMENT_TYPE', 'staging' ) to skip analytics ?>
         <script async src="https://www.googletagmanager.com/gtag/js?id=G-V2E02382TY"></script>
         <script>
           window.dataLayer = window.dataLayer || [];
@@ -8,6 +9,7 @@
           gtag('js', new Date());
           gtag('config', 'G-V2E02382TY');
         </script>
+        <?php endif; ?>
         
 		<meta charset="<?php bloginfo( 'charset' ); ?>"/>
 		<meta name="viewport" content="width=device-width, initial-scale=1">
