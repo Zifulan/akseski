@@ -64,6 +64,7 @@ body {
 	color: var(--ink);
 	margin: 0 !important;
 	min-height: 100vh;
+	min-height: 100dvh;
 	background: var(--apt-blue);
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
@@ -186,7 +187,7 @@ a:hover { color: var(--apt-red); }
 }
 .apt-section-title {
 	color: var(--on-grad);
-	font-size: clamp(2rem, 4.2vw, 3.25rem);
+	font-size: clamp(2rem, 1.3rem + 2.4vw, 3.25rem);
 	font-weight: 700;
 	line-height: 1.05;
 	margin: 0;
@@ -469,7 +470,7 @@ html:has(.apt-menu[open]) { overflow: hidden; }
 	background: linear-gradient(90deg, var(--apt-blue), var(--apt-red), var(--apt-yellow));
 }
 .apt-hero-title {
-	font-size: clamp(2.75rem, 6.2vw, 5.5rem);
+	font-size: clamp(2.75rem, 1.6rem + 4.4vw, 5.5rem);
 	font-weight: 700;
 	line-height: 0.98;
 	letter-spacing: -0.025em;
@@ -499,7 +500,7 @@ html:has(.apt-menu[open]) { overflow: hidden; }
 }
 .apt-hero-feature-title {
 	display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
-	font-size: clamp(1.05rem, 1.8vw, 1.5rem); font-weight: 700; line-height: 1.2; margin: 0; color: var(--paper);
+	font-size: clamp(1.05rem, 0.8rem + 0.8vw, 1.5rem); font-weight: 700; line-height: 1.2; margin: 0; color: var(--paper);
 }
 @media (max-width: 575.98px) {
 	.apt-hero-feature { aspect-ratio: 4 / 3; }
@@ -513,7 +514,7 @@ html:has(.apt-menu[open]) { overflow: hidden; }
 	padding: 5px 10px; border-radius: var(--radius-pill);
 }
 
-.apt-highlights-title { font-size: clamp(1.5rem, 2.4vw, 2rem); font-weight: 700; margin: 0 0 12px; }
+.apt-highlights-title { font-size: clamp(1.5rem, 1.15rem + 1vw, 2rem); font-weight: 700; margin: 0 0 12px; }
 .apt-highlights {
 	display: grid;
 	grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -564,11 +565,12 @@ html:has(.apt-menu[open]) { overflow: hidden; }
 }
 .modern-news-section .apt-news-layout > * { min-width: 0; }
 .modern-news-section .apt-news-intro .apt-pill { margin-top: 22px; }
-@media (max-width: 991.98px) {
+@media (max-width: 1199.98px) {
 	.modern-news-section .apt-news-layout { grid-template-columns: 1fr; }
 }
 
 .news-card {
+	position: relative;
 	background: var(--paper);
 	border-radius: var(--radius-tile);
 	overflow: hidden;
@@ -578,29 +580,65 @@ html:has(.apt-menu[open]) { overflow: hidden; }
 	color: var(--ink);
 	box-shadow: 0 14px 34px rgba(10, 14, 40, 0.16);
 }
-.news-card-image-wrapper { aspect-ratio: 16 / 10; overflow: hidden; background: var(--paper-2); }
-.owl-carousel .owl-item img.news-card-image,
-.news-card-image { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; }
-.news-card:hover .news-card-image { transform: scale(1.04); }
-.news-card-image-overlay { display: none; }
-.news-card-body { padding: 18px 20px 20px; display: flex; flex-direction: column; flex: 1; }
+/* Media fills a fixed ratio itself: no wrapper needed */
+.news-card > img {
+	display: block;
+	width: 100%;
+	aspect-ratio: 16 / 10;
+	object-fit: cover;
+	background: var(--paper-2);
+	transition: scale 0.5s ease;
+}
+.news-card > :not(img) { padding-inline: 20px; }
+.news-card-header { padding-top: 18px; }
 .news-card-tag { margin-bottom: 8px; }
 .news-card-title { font-size: 1.15rem; font-weight: 700; line-height: 1.25; margin: 0 0 6px; }
+.news-card-title a { color: inherit; text-decoration: none; }
 .news-card-subtitle {
-	font-size: 0.875rem; color: var(--ink-2); line-height: 1.45; margin-bottom: 10px;
+	font-size: 0.875rem; color: var(--ink-2); line-height: 1.45; margin: 0 0 10px;
 	display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
 }
-.news-card-date { font-size: 0.85rem; color: var(--ink-2); margin-bottom: 12px; }
-.news-meta-grid { border-top: 1px solid var(--rule-soft); padding-top: 10px; margin-bottom: 14px; }
+.news-card-date { font-size: 0.85rem; color: var(--ink-2); margin: 0 0 12px; }
+.news-meta-grid { border-top: 1px solid var(--rule-soft); padding-top: 10px; margin: 0 0 14px; }
 .news-meta-item { font-size: 0.8rem; line-height: 1.45; color: var(--ink-3); margin-bottom: 4px; }
+.news-meta-item dt, .news-meta-item dd { display: inline; margin: 0; }
 .news-meta-item .meta-label { color: var(--ink-2); font-weight: 500; }
 .news-meta-item a { color: var(--ink-2); text-decoration: underline; text-decoration-color: var(--rule-soft); text-underline-offset: 2px; }
 .news-meta-item a:hover { color: var(--apt-red); }
-.news-card-cta { margin-top: auto; }
+.news-card-cta { margin-top: auto; padding-bottom: 20px; }
 .news-cta-btn { display: inline-flex; align-items: center; color: var(--ink); font-weight: 600; text-decoration: none !important; }
-.news-cta-btn:hover { color: var(--apt-red); }
 .news-card-summit { box-shadow: inset 0 4px 0 var(--apt-red), 0 14px 34px rgba(10, 14, 40, 0.16); }
 .news-card-ministerial { box-shadow: inset 0 4px 0 var(--apt-blue), 0 14px 34px rgba(10, 14, 40, 0.16); }
+
+/* Whole card is clickable through the heading link; other links stay on top */
+.news-card a.card-link::after { content: ''; position: absolute; inset: 0; }
+.news-card:has(a.card-link) :is(a:not(.card-link), button) { position: relative; z-index: 1; }
+.news-card a.card-link:focus-visible { outline: none; box-shadow: none; }
+.news-card:has(a.card-link:focus-visible) {
+	outline: 2px solid var(--ink);
+	outline-offset: 2px;
+	box-shadow: 0 0 0 2px var(--paper), 0 0 0 6px var(--paper);
+}
+.news-card:has(a.card-link:hover) .news-card-title,
+.news-card:has(a.card-link:hover) .news-cta-btn { color: var(--apt-red); }
+.news-card:has(a.card-link:hover) > img { scale: 1.03; }
+@media (prefers-reduced-motion: reduce) {
+	.news-card:has(a.card-link:hover) > img { scale: 1; }
+}
+
+/* Layout follows the card's own width, not the viewport */
+.apt-slide { container-type: inline-size; }
+@container (min-width: 540px) {
+	.news-card:has(> img) {
+		display: grid;
+		grid-template-columns: 42% minmax(0, 1fr);
+		grid-template-rows: auto auto 1fr;
+		column-gap: 4px;
+	}
+	.news-card:has(> img) > img { grid-column: 1; grid-row: 1 / -1; height: 100%; aspect-ratio: auto; min-height: 260px; }
+	.news-card:has(> img) > :not(img) { grid-column: 2; padding-inline: 20px 24px; }
+	.news-card:has(> img) > .news-card-cta { align-self: end; }
+}
 
 .apt-carousel { display: grid; grid-template-columns: minmax(0, 1fr); }
 .apt-carousel-track {
@@ -634,10 +672,6 @@ html:has(.apt-menu[open]) { overflow: hidden; }
 }
 @media (min-width: 992px) {
 	.apt-carousel-track > * { flex-basis: 66%; }
-	/* Wide card: image beside the text keeps the card short */
-	.apt-slide .news-card { flex-direction: row; }
-	.apt-slide .news-card-image-wrapper { flex: 0 0 44%; aspect-ratio: auto; min-height: 100%; }
-	.apt-slide .news-card-body { padding: 22px 24px; }
 }
 .apt-slide .news-card { width: 100%; }
 
@@ -652,12 +686,14 @@ html:has(.apt-menu[open]) { overflow: hidden; }
 
 .apt-carousel-controls {
 	grid-row: 2;
+	grid-column: 1; /* share row 2 with the markers instead of creating a second column */
 	display: flex;
 	gap: 10px;
 	align-items: center;
 }
 .apt-carousel-markers {
 	grid-row: 2;
+	grid-column: 1;
 	justify-self: end;
 	align-self: center;
 	display: flex;
@@ -717,7 +753,7 @@ html:has(.apt-menu[open]) { overflow: hidden; }
 	gap: 0 14px;
 }
 .stat-card { grid-column: span 2; padding: 4px 0 20px; border-bottom: 1px solid var(--on-grad-rule); margin-bottom: 20px; }
-.stat-number { font-size: clamp(2.25rem, 4vw, 3.25rem); font-weight: 700; line-height: 1; margin-bottom: 6px; }
+.stat-number { font-size: clamp(2.25rem, 1.6rem + 2vw, 3.25rem); font-weight: 700; line-height: 1; margin-bottom: 6px; }
 .stat-label { font-size: 0.9rem; color: var(--on-grad-2); }
 .stat-card-blue .stat-number::after,
 .stat-card-yellow .stat-number::after,
@@ -788,7 +824,7 @@ details[open] > .resource-accordion-summary::before,
 details[open] > .agenda-month-summary::before { rotate: 0deg; }
 .resource-accordion-summary:hover,
 .agenda-month-summary:hover { color: var(--apt-red); }
-.resource-accordion-summary { font-size: clamp(1.15rem, 2vw, 1.5rem); font-weight: 700; }
+.resource-accordion-summary { font-size: clamp(1.15rem, 0.95rem + 0.7vw, 1.5rem); font-weight: 700; }
 
 /* Open/close slide; content stays findable with find-in-page */
 .resource-accordion-item::details-content,
@@ -856,7 +892,7 @@ details[open] > .agenda-month-summary::before { rotate: 0deg; }
 
 .agenda-year-section + .agenda-year-section { margin-top: 28px; }
 .agenda-year-title {
-	font-size: clamp(1.75rem, 3vw, 2.5rem); font-weight: 700;
+	font-size: clamp(1.75rem, 1.3rem + 1.5vw, 2.5rem); font-weight: 700;
 	padding-bottom: 10px; margin: 0; border-bottom: 1px solid var(--rule);
 }
 .agenda-month { border-bottom: 1px solid var(--rule-soft); }
@@ -895,7 +931,7 @@ main.site-single {
 }
 .topic-head { border-bottom: 1px solid var(--rule) !important; padding-top: clamp(28px, 4vw, 48px) !important; margin-top: 0 !important; }
 .topic-head .container { margin-top: 0 !important; }
-.topic-head h1, .topic-head h2 { font-size: clamp(2rem, 4vw, 3rem) !important; font-weight: 700 !important; }
+.topic-head h1, .topic-head h2 { font-size: clamp(2rem, 1.4rem + 2vw, 3rem) !important; font-weight: 700 !important; }
 
 .site-main:not(.front-main) .btn-primary,
 .site-single .btn-primary {

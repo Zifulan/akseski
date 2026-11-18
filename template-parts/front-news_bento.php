@@ -45,7 +45,7 @@
 					// Level
 					$levobj=get_category(akseki_get_level_from_id($latest['id'],'post'));
 					if($levobj){
-						$ll='<div class="news-meta-item"><span class="meta-label">Level:</span> <a href="'.get_category_link($levobj->term_id).'">'.$levobj->name.'</a></div>';
+						$ll='<div class="news-meta-item"><dt class="meta-label">Level:</dt> <dd><a href="'.get_category_link($levobj->term_id).'">'.$levobj->name.'</a></dd></div>';
 					}else{
 						$ll='';
 					}
@@ -62,15 +62,20 @@
 					$thmid = akseki_get_theme_from_id($latest['id'],'post');
 					if(!empty($thmid)){
 						$thmobj=get_post(akseki_get_theme_from_id($latest['id'],'post'));
-						$lt='<div class="news-meta-item"><span class="meta-label">Theme:</span> <a href="'.get_permalink($thmobj->ID).'">'.$thmobj->post_title.'</a></div>';
+						$lt='<div class="news-meta-item"><dt class="meta-label">Theme:</dt> <dd><a href="'.get_permalink($thmobj->ID).'">'.$thmobj->post_title.'</a></dd></div>';
 					}else{
 						$lt='';
 					}
 					
 					// Read more button
+					// Cards with content get a heading link (stretched over the card) and a
+					// "Read more" whose accessible name says what it is about.
+					$card_title = akseki_get_shortname($latest["title"],$latest["id"],0);
 					if(!has_tag("hasnocontent")){
-						$readmore = '<div class="news-card-cta"><a class="news-cta-btn apt-arrow" href="'.$latest["permalink"].'">Read more</a></div>';
-					}else{			
+						$heading = '<a class="card-link" href="'.esc_url($latest["permalink"]).'">'.$card_title.'</a>';
+						$readmore = '<footer class="news-card-cta"><a class="news-cta-btn apt-arrow" href="'.esc_url($latest["permalink"]).'">Read more<span class="screen-reader-text"> about '.esc_html(wp_strip_all_tags($latest["title"])).'</span></a></footer>';
+					}else{
+						$heading = $card_title;
 						$readmore = '';
 					}
 					
@@ -85,7 +90,7 @@
 					
 					// Full title display
 					if($latest['shortname'] !== $latest['title']){
-						$st = '<div class="news-card-subtitle">'.$latest["title"].'</div>';
+						$st = '<p class="news-card-subtitle">'.$latest["title"].'</p>';
 					}else{
 						$st = '';
 					}
@@ -99,25 +104,20 @@
 					
 					$latest_card = '
 						<div class="apt-slide" role="group" aria-roledescription="slide" aria-label="'.$key.' of '.$total.'" data-marker-name="'.esc_attr('Go to slide '.$key.': '.wp_strip_all_tags($latest['shortname'])).'">
-							<div class="news-card '.$cardClass.'" id="card_com-'.get_the_id().'">
-								<div class="news-card-image-wrapper">
-									<img src="'.esc_url($thethumb).'" class="news-card-image" alt="" loading="lazy"/>
-									<div class="news-card-image-overlay"></div>
-								</div>
-								
-								<div class="news-card-body">
+							<article class="news-card '.$cardClass.'" id="card_com-'.get_the_id().'">
+								'.($thethumb ? '<img src="'.esc_url($thethumb).'" class="news-card-image" alt="" loading="lazy"/>' : '').'
+								<header class="news-card-header">
 									'.$lp.'
-									<h3 class="news-card-title">'.akseki_get_shortname($latest["title"],$latest["id"],0).'</h3>'
-									.$st.
-									'<div class="news-card-date">'.akseki_get_the_meta($latest["id"]).'</div>
-									
-									<div class="news-meta-grid">
-										'.$ll.$lt.'
-										<div class="news-meta-item"><span class="meta-label">Topic:</span> <a href="'.get_category_link($latest["category"]).'">'.$latest["category"]->description.'</a></div>
-									</div>
-									'.$readmore.'
-								</div>
-							</div>
+									<h3 class="news-card-title">'.$heading.'</h3>
+									'.$st.'
+									<p class="news-card-date">'.akseki_get_the_meta($latest["id"]).'</p>
+								</header>
+								<dl class="news-meta-grid">
+									'.$ll.$lt.'
+									<div class="news-meta-item"><dt class="meta-label">Topic:</dt> <dd><a href="'.get_category_link($latest["category"]).'">'.$latest["category"]->description.'</a></dd></div>
+								</dl>
+								'.$readmore.'
+							</article>
 						</div>';
 					echo($latest_card);
 					++$key;
